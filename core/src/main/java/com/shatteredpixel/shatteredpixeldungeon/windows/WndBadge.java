@@ -28,7 +28,7 @@ import com.shatteredpixel.shatteredpixeldungeon.ui.RenderedTextBlock;
 import com.shatteredpixel.shatteredpixeldungeon.ui.Window;
 import com.watabou.input.PointerEvent;
 import com.watabou.noosa.Image;
-import com.watabou.noosa.ui.ColorBlock;
+import com.watabou.noosa.ColorBlock;
 import com.watabou.noosa.PointerArea;
 
 public class WndBadge extends Window {
