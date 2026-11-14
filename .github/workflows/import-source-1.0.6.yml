@@ -15,11 +15,21 @@ jobs:
   import-source:
     runs-on: ubuntu-latest
     steps:
+      - name: Comprobar autorización para publicar workflows
+        env:
+          IMPORT_TOKEN: ${{ secrets.IMPORT_TOKEN }}
+        run: |
+          if [ -z "$IMPORT_TOKEN" ]; then
+            echo "::error::Falta el secreto IMPORT_TOKEN. Creá un fine-grained personal access token con Contents: Read and write y Workflows: Read and write para este repositorio, y guardalo en Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+
       - name: Descargar repositorio
         uses: actions/checkout@v4
         with:
           ref: main
           fetch-depth: 0
+          token: ${{ secrets.IMPORT_TOKEN }}
 
       - name: Descargar y verificar ZIP
         env:
