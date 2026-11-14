@@ -601,6 +601,9 @@ public class YogDzewa extends Mob {
 		Dungeon.level.unseal();
 		super.die( cause );
 
+		// Validate after the boss death has awarded its experience.
+		Badges.validateDestroyerOfDoom();
+
 		yell( Messages.get(this, "defeated") );
 	}
 
