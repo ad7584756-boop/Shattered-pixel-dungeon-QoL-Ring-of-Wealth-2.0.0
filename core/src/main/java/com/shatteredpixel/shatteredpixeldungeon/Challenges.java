@@ -38,10 +38,12 @@ public class Challenges {
 	public static final int CHAMPION_ENEMIES	= 128;
 	public static final int STRONGER_BOSSES 	= 256;
 	public static final int OVERKILL_DOOM_MODE = 512;
-	public static final int GODS_CHOSEN_ONE = 1024;
+	public static final int LEGACY_GODS_CHOSEN_ONE = 1024;
+	// God's Chosen One is the ascent medal for Overkill, not a separate challenge.
+	public static final int GODS_CHOSEN_ONE = OVERKILL_DOOM_MODE;
 
 	public static final int MAX_VALUE           = 2047;
-	public static final int MAX_CHALS           = 11;
+	public static final int MAX_CHALS           = 10;
 
 	public static final String[] NAME_IDS = {
 			"champion_enemies",
@@ -58,7 +60,7 @@ public class Challenges {
 	};
 
 	public static final int[] MASKS = {
-			CHAMPION_ENEMIES, STRONGER_BOSSES, NO_FOOD, NO_ARMOR, NO_HEALING, NO_HERBALISM, SWARM_INTELLIGENCE, DARKNESS, NO_SCROLLS, OVERKILL_DOOM_MODE, GODS_CHOSEN_ONE
+			CHAMPION_ENEMIES, STRONGER_BOSSES, NO_FOOD, NO_ARMOR, NO_HEALING, NO_HERBALISM, SWARM_INTELLIGENCE, DARKNESS, NO_SCROLLS, OVERKILL_DOOM_MODE
 	};
 
 	/** Floor-based monster multiplier used only by Overkill Doom Mode. */
