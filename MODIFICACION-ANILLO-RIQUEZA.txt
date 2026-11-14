@@ -1,0 +1,19 @@
+MODIFICACION: ANILLO DE RIQUEZA x3 (ANDROID / DESKTOP)
+
+Archivo modificado:
+core/src/main/java/com/shatteredpixel/shatteredpixeldungeon/items/rings/RingOfWealth.java
+
+Cambios:
+- Multiplicador x3 aplicado al multiplicador de probabilidad de botín del Anillo de Riqueza.
+- Las tiradas de recompensas especiales del Anillo de Riqueza se triplican.
+- Los anillos generados como recompensa pasan a tener como nivel mínimo el nivel efectivo completo usado por la generación, en lugar de la mitad. El resto del equipo conserva su progresión original.
+
+Compilar APK de prueba (Android Studio o terminal con Android SDK configurado):
+  ./gradlew android:assembleDebug
+
+El APK de depuración se genera en:
+  android/build/outputs/apk/debug/android-debug.apk
+
+Para compilar release firmado se necesita configurar android/keystore.properties con una clave propia.
+
+IMPORTANTE: Este entorno no pudo descargar Gradle 9.5.0 porque no tiene acceso de red DNS, y no tiene Android SDK instalado. Por eso aquí no se pudo compilar ni verificar un APK. Este ZIP contiene el código fuente modificado, no un APK.

@@ -1,0 +1,72 @@
+/*
+ * Pixel Dungeon
+ * Copyright (C) 2012-2015 Oleg Dolya
+ *
+ * Shattered Pixel Dungeon
+ * Copyright (C) 2014-2026 Evan Debenham
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ */
+
+package com.shatteredpixel.shatteredpixeldungeon.effects;
+
+import com.shatteredpixel.shatteredpixeldungeon.Assets;
+import com.shatteredpixel.shatteredpixeldungeon.SPDSettings;
+import com.watabou.noosa.Image;
+
+public class BannerSprites {
+
+	public enum  Type {
+		TITLE_PORT,
+		TITLE_GLOW_PORT,
+		TITLE_LAND,
+		TITLE_GLOW_LAND,
+		BOSS_SLAIN,
+		GAME_OVER,
+	}
+
+	public static Image get( Type type ) {
+		boolean modded = SPDSettings.moddedBanners();
+		Image icon = new Image( modded ? Assets.Interfaces.BANNERS_MOD : Assets.Interfaces.BANNERS );
+		switch (type) {
+			case TITLE_PORT:
+				icon.frame( modded
+						? icon.texture.uvRect( 51, 98, 177, 158 )
+						: icon.texture.uvRect( 0, 0, 139, 100 ) );
+				break;
+			case TITLE_GLOW_PORT:
+				icon.frame( modded
+						? icon.texture.uvRect( 290, 99, 416, 159 )
+						: icon.texture.uvRect( 139, 0, 278, 100 ) );
+				break;
+			case TITLE_LAND:
+				icon.frame( modded
+						? icon.texture.uvRect( 51, 98, 177, 158 )
+						: icon.texture.uvRect( 0, 100, 240, 157 ) );
+				break;
+			case TITLE_GLOW_LAND:
+				icon.frame( modded
+						? icon.texture.uvRect( 290, 99, 416, 159 )
+						: icon.texture.uvRect( 240, 100, 480, 157 ) );
+				break;
+			case BOSS_SLAIN:
+				icon.frame( icon.texture.uvRect( 0, 157, 127, 225 ) );
+				break;
+			case GAME_OVER:
+				icon.frame( icon.texture.uvRect( 128, 157, 256, 192 ) );
+				break;
+		}
+		return icon;
+	}
+}

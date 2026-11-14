@@ -1,0 +1,121 @@
+{
+  "heat_window_sec": 900,
+  "sprint_donor_reward": 100,
+  "sprint_donor_reward_per_level": 100,
+  "per_user_bar_cap_fraction": 0.0,
+  "repeat_mob_diminishing": false,
+  "soft_floor": {
+    "enabled": true,
+    "board": "sprint_eligible",
+    "top_n": 3,
+    "bonus": 0.25,
+    "min_unique_summoners": 10,
+    "exclude_users": [
+      "DaltonGoesFast",
+      "DaltonGoesSlow"
+    ],
+    "apply_to_bar": true,
+    "apply_to_sprint": true,
+    "apply_to_heat": true
+  },
+  "shatter_event": {
+    "enabled": true,
+    "duration_sec": 60,
+    "jackpot_chance": 0.01,
+    "sidecar_chance_by_level": {
+      "1": 0.8,
+      "2": 0.88,
+      "3": 0.94,
+      "4": 0.98,
+      "5": 1.0
+    },
+    "rat_max_fraction": 0.25,
+    "helpful_max_fraction": 0.25,
+    "hostile_keys": [
+      "cost_per_plant",
+      "cost_per_debuff",
+      "cost_per_corrupt_ally",
+      "cost_per_trap",
+      "cost_per_gas",
+      "cost_per_bomb",
+      "cost_per_wand",
+      "cost_per_hex",
+      "cost_per_degrade",
+      "cost_per_sabotage",
+      "cost_per_curse",
+      "cost_per_scroll",
+      "cost_per_transmute"
+    ],
+    "helpful_keys": [
+      "cost_per_dew",
+      "cost_per_ally_bee",
+      "cost_per_ward"
+    ]
+  },
+  "levels": [
+    {
+      "level": 1,
+      "zone": "Sewers",
+      "bar_threshold": 500,
+      "pip_count": 3,
+      "monsters": [
+        "rat",
+        "albino",
+        "snake",
+        "gnoll",
+        "crab",
+        "slime",
+        "swarm"
+      ]
+    },
+    {
+      "level": 2,
+      "zone": "Prison",
+      "bar_threshold": 700,
+      "pip_count": 5,
+      "monsters": [
+        "skeleton",
+        "dm100",
+        "guard",
+        "necromancer",
+        "thief"
+      ]
+    },
+    {
+      "level": 3,
+      "zone": "Caves",
+      "bar_threshold": 1000,
+      "pip_count": 5,
+      "monsters": [
+        "bat",
+        "brute",
+        "shaman",
+        "spinner"
+      ]
+    },
+    {
+      "level": 4,
+      "zone": "Metro",
+      "bar_threshold": 1200,
+      "pip_count": 6,
+      "monsters": [
+        "ghoul",
+        "elemental",
+        "warlock",
+        "monk",
+        "golem"
+      ]
+    },
+    {
+      "level": 5,
+      "zone": "Halls",
+      "bar_threshold": 2222,
+      "pip_count": 10,
+      "monsters": [
+        "eye",
+        "scorpio",
+        "succubus"
+      ]
+    }
+  ]
+}

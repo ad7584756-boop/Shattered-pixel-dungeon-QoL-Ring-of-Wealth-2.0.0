@@ -1,0 +1,54 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="SPD Companion 3"
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.6", "Forward Plus")
+run/max_fps=60
+config/icon="res://icon.svg"
+
+[autoload]
+
+CompanionConfig="*res://scripts/companion_config.gd"
+FreePromosState="*res://scripts/free_promos_state.gd"
+DoublePointsState="*res://scripts/double_points_state.gd"
+NineChallengeDeathsState="*res://scripts/nine_challenge_deaths_state.gd"
+ViewerCountsState="*res://scripts/viewer_counts_state.gd"
+ViewerCountsService="*res://scripts/viewer_counts_service.gd"
+GameWebSocketClient="*res://scripts/game_websocket_client.gd"
+StreamerBotUdp="*res://scripts/streamerbot_udp_listener.gd"
+SpawnResultFileBridge="*res://scripts/spawn_result_file_bridge.gd"
+ObsWebSocketClient="*res://scripts/obs_websocket_client.gd"
+SummonPollService="*res://scripts/summon_poll_service.gd"
+BestiaryPollService="*res://scripts/bestiary_poll_service.gd"
+CompanionSettingsPollService="*res://scripts/companion_settings_poll_service.gd"
+CompanionAudio="*res://scripts/companion_audio.gd"
+
+[display]
+
+window/size/viewport_width=3000
+window/size/viewport_height=1920
+window/size/transparent=true
+window/stretch/mode="canvas_items"
+window/stretch/aspect="keep"
+window/per_pixel_transparency/allowed=true
+; Atlas 3000x1920: 1920x1080 at (0,0), 1080x1920 at (1920,0). Settings stays a native OS window.
+window/subwindows/embed_subwindows=false
+
+[physics]
+
+3d/physics_engine="GodotPhysics3D"
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"

@@ -1,0 +1,153 @@
+[gd_scene load_steps=6 format=3 uid="uid://spdcompanionmain"]
+
+[ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
+[ext_resource type="Script" path="res://scripts/hud_status.gd" id="2_hud"]
+[ext_resource type="PackedScene" path="res://scenes/settings_window.tscn" id="5_settings"]
+[ext_resource type="PackedScene" path="res://scenes/stream_canvas.tscn" id="6_stream"]
+[ext_resource type="PackedScene" path="res://scenes/vertical_companion_window.tscn" id="7_vert"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel_bg"]
+bg_color = Color(0.06, 0.07, 0.12, 0.88)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[node name="Main" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_main")
+
+[node name="HorizontalPane" type="SubViewportContainer" parent="."]
+layout_mode = 0
+offset_right = 1920.0
+offset_bottom = 1080.0
+stretch = true
+mouse_filter = 2
+
+[node name="SubViewport" type="SubViewport" parent="HorizontalPane"]
+disable_3d = true
+transparent_bg = true
+handle_input_locally = false
+size = Vector2i(1920, 1080)
+render_target_update_mode = 4
+
+[node name="StreamCanvas" parent="HorizontalPane/SubViewport" instance=ExtResource("6_stream")]
+layout_profile = &"ui"
+
+[node name="CanvasLayerHUD" type="CanvasLayer" parent="."]
+layer = 1
+
+[node name="HUDStatus" type="PanelContainer" parent="CanvasLayerHUD"]
+offset_left = 16.0
+offset_top = 16.0
+offset_right = 520.0
+offset_bottom = 168.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel_bg")
+script = ExtResource("2_hud")
+
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayerHUD/HUDStatus"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 10
+
+[node name="VBox" type="VBoxContainer" parent="CanvasLayerHUD/HUDStatus/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="WSRow" type="HBoxContainer" parent="CanvasLayerHUD/HUDStatus/MarginContainer/VBox"]
+layout_mode = 2
+
+[node name="Key" type="Label" parent="CanvasLayerHUD/HUDStatus/MarginContainer/VBox/WSRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "WebSocket"
+
+[node name="Value" type="Label" parent="CanvasLayerHUD/HUDStatus/MarginContainer/VBox/WSRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 18
+text = "…"
+
+[node name="OBSRow" type="HBoxContainer" parent="CanvasLayerHUD/HUDStatus/MarginContainer/VBox"]
+layout_mode = 2
+
+[node name="Key" type="Label" parent="CanvasLayerHUD/HUDStatus/MarginContainer/VBox/OBSRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "OBS"
+
+[node name="Value" type="Label" parent="CanvasLayerHUD/HUDStatus/MarginContainer/VBox/OBSRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 18
+text = "…"
+
+[node name="UDPRow" type="HBoxContainer" parent="CanvasLayerHUD/HUDStatus/MarginContainer/VBox"]
+layout_mode = 2
+
+[node name="Key" type="Label" parent="CanvasLayerHUD/HUDStatus/MarginContainer/VBox/UDPRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Streamer.bot UDP"
+
+[node name="Value" type="Label" parent="CanvasLayerHUD/HUDStatus/MarginContainer/VBox/UDPRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 18
+text = "…"
+
+[node name="SnapshotRow" type="HBoxContainer" parent="CanvasLayerHUD/HUDStatus/MarginContainer/VBox"]
+layout_mode = 2
+
+[node name="Key" type="Label" parent="CanvasLayerHUD/HUDStatus/MarginContainer/VBox/SnapshotRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Snapshot"
+
+[node name="Value" type="Label" parent="CanvasLayerHUD/HUDStatus/MarginContainer/VBox/SnapshotRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 18
+text = "—"
+
+[node name="SummonMarchRow" type="HBoxContainer" parent="CanvasLayerHUD/HUDStatus/MarginContainer/VBox"]
+layout_mode = 2
+
+[node name="Key" type="Label" parent="CanvasLayerHUD/HUDStatus/MarginContainer/VBox/SummonMarchRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Summon march"
+
+[node name="Value" type="Label" parent="CanvasLayerHUD/HUDStatus/MarginContainer/VBox/SummonMarchRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 18
+text = "…"
+
+[node name="HintRow" type="HBoxContainer" parent="CanvasLayerHUD/HUDStatus/MarginContainer/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Hint" type="Label" parent="CanvasLayerHUD/HUDStatus/MarginContainer/VBox/HintRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.65, 0.7, 0.8, 1)
+text = "F5: reload cfg · F3: hide/show this panel · F4: vertical pane · F9: chroma debug fill"
+
+[node name="SettingsBtn" type="Button" parent="CanvasLayerHUD/HUDStatus/MarginContainer/VBox/HintRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Settings (F2)"
+
+[node name="SettingsWindow" parent="." instance=ExtResource("5_settings")]
+layout_mode = 0
+
+[node name="VerticalCompanionWindow" parent="." instance=ExtResource("7_vert")]

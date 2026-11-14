@@ -1,0 +1,796 @@
+/*
+ * Pixel Dungeon
+ * Copyright (C) 2012-2015 Oleg Dolya
+ *
+ * Shattered Pixel Dungeon
+ * Copyright (C) 2014-2026 Evan Debenham
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>
+ */
+
+package com.shatteredpixel.shatteredpixeldungeon;
+
+import com.shatteredpixel.shatteredpixeldungeon.Assets;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
+import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
+import com.shatteredpixel.shatteredpixeldungeon.items.EquipableItem;
+import com.shatteredpixel.shatteredpixeldungeon.items.Generator;
+import com.shatteredpixel.shatteredpixeldungeon.items.Gold;
+import com.shatteredpixel.shatteredpixeldungeon.items.Honeypot;
+import com.shatteredpixel.shatteredpixeldungeon.items.ArcaneResin;
+import com.shatteredpixel.shatteredpixeldungeon.items.LiquidMetal;
+import com.shatteredpixel.shatteredpixeldungeon.items.Stylus;
+import com.shatteredpixel.shatteredpixeldungeon.items.Heap;
+import com.shatteredpixel.shatteredpixeldungeon.items.Item;
+import com.shatteredpixel.shatteredpixeldungeon.items.KindOfWeapon;
+import com.shatteredpixel.shatteredpixeldungeon.items.armor.Armor;
+import com.shatteredpixel.shatteredpixeldungeon.items.armor.ClassArmor;
+import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.Artifact;
+import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.CloakOfShadows;
+import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.HolyTome;
+import com.shatteredpixel.shatteredpixeldungeon.items.bombs.Bomb;
+import com.shatteredpixel.shatteredpixeldungeon.items.food.Food;
+import com.shatteredpixel.shatteredpixeldungeon.items.potions.Potion;
+import com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfStrength;
+import com.shatteredpixel.shatteredpixeldungeon.items.potions.brews.Brew;
+import com.shatteredpixel.shatteredpixeldungeon.items.potions.elixirs.Elixir;
+import com.shatteredpixel.shatteredpixeldungeon.items.potions.exotic.ExoticPotion;
+import com.shatteredpixel.shatteredpixeldungeon.items.rings.Ring;
+import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.Scroll;
+import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfUpgrade;
+import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.exotic.ExoticScroll;
+import com.shatteredpixel.shatteredpixeldungeon.items.spells.Spell;
+import com.shatteredpixel.shatteredpixeldungeon.items.stones.Runestone;
+import com.shatteredpixel.shatteredpixeldungeon.items.trinkets.Trinket;
+import com.shatteredpixel.shatteredpixeldungeon.items.wands.Wand;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.SpiritBow;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.MagesStaff;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.MeleeWeapon;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.MissileWeapon;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.darts.TippedDart;
+import com.shatteredpixel.shatteredpixeldungeon.journal.Catalog;
+import com.shatteredpixel.shatteredpixeldungeon.plants.Plant;
+import com.shatteredpixel.shatteredpixeldungeon.plants.Rotberry;
+import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
+import com.shatteredpixel.shatteredpixeldungeon.utils.TrainingExport;
+import com.shatteredpixel.shatteredpixeldungeon.windows.WndCommand;
+import com.watabou.noosa.Game;
+import com.watabou.noosa.audio.Sample;
+import com.watabou.utils.Bundle;
+import com.watabou.utils.Random;
+import com.watabou.utils.Reflection;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.Map;
+
+/**
+ * Command pact: choose any item of the same kind before dungeon or shop loot is taken.
+ * Pickup and its turn happen on confirm. Cancel leaves the item where it is.
+ */
+public class Command {
+
+	private static class PendingChoice {
+		final Item item;
+		final int qty;
+		PendingChoice( Item item, int qty ){
+			this.item = item;
+			this.qty = qty;
+		}
+	}
+
+	private static final class Deferred {
+		enum Kind { GROUND, SHOP }
+
+		final Kind kind;
+		final int pos;
+		final Item item;
+		final int price;
+
+		Deferred( Kind kind, Heap heap, Item item, int price ){
+			this.kind = kind;
+			this.pos = heap.pos;
+			this.item = item;
+			this.price = price;
+		}
+	}
+
+	private static final LinkedList<PendingChoice> pending = new LinkedList<>();
+	private static Deferred deferred;
+	private static boolean windowOpen = false;
+
+	private static final String POTION_LAYOUT = "command_potion_layout";
+	private static final String SCROLL_LAYOUT = "command_scroll_layout";
+	private static final String RING_LAYOUT = "command_ring_layout";
+	private static final String SOU_ADJUSTMENT = "command_sou_adjustment";
+	private static final long LAYOUT_SEED = 0xC0A11A70L;
+
+	/** 3 upgrade scrolls per chapter across 5 chapters. Matches {@link Dungeon#souNeeded()}. */
+	private static final int UPGRADE_SCROLLS_SCHEDULED = 15;
+
+	/**
+	 * Extra upgrade scrolls minted by Command, minus upgrade scrolls Command turned into something else.
+	 * Forbidden Runes already keeps only the odd scheduled drops, so 0 means that half is the whole budget.
+	 */
+	private static int souAdjustment;
+
+	private static ArrayList<Class<?>> potionLayout;
+	private static ArrayList<Class<?>> scrollLayout;
+	private static ArrayList<Class<?>> ringLayout;
+
+	public static void reset(){
+		pending.clear();
+		deferred = null;
+		windowOpen = false;
+		potionLayout = null;
+		scrollLayout = null;
+		ringLayout = null;
+		souAdjustment = 0;
+	}
+
+	public static void initForRun(){
+		potionLayout = null;
+		scrollLayout = null;
+		ringLayout = null;
+		ensureLayouts();
+	}
+
+	public static void store( Bundle bundle ){
+		if (potionLayout != null) bundle.put(POTION_LAYOUT, potionLayout.toArray(new Class[0]));
+		if (scrollLayout != null) bundle.put(SCROLL_LAYOUT, scrollLayout.toArray(new Class[0]));
+		if (ringLayout != null) bundle.put(RING_LAYOUT, ringLayout.toArray(new Class[0]));
+		bundle.put(SOU_ADJUSTMENT, souAdjustment);
+	}
+
+	public static void restore( Bundle bundle ){
+		pending.clear();
+		deferred = null;
+		windowOpen = false;
+		potionLayout = loadLayout(bundle, POTION_LAYOUT);
+		scrollLayout = loadLayout(bundle, SCROLL_LAYOUT);
+		ringLayout = loadLayout(bundle, RING_LAYOUT);
+		souAdjustment = bundle != null && bundle.contains(SOU_ADJUSTMENT) ? bundle.getInt(SOU_ADJUSTMENT) : 0;
+	}
+
+	public static void offerAfterPickup( Item picked, int incomingQty ){
+		if (!Dungeon.isModified(Modifiers.COMMAND) || Modifiers.suppressCommandWindow){
+			if (picked != null) picked.commandLoot = false;
+			return;
+		}
+		if (Dungeon.hero == null || !Dungeon.hero.isAlive()){
+			if (picked != null) picked.commandLoot = false;
+			return;
+		}
+
+		Item subject = resolveSubject(picked);
+		if (subject == null){
+			return;
+		}
+
+		ArrayList<Class<?>> choices = choicesFor(subject, incomingQty);
+		if (choices == null || choices.isEmpty()){
+			subject.commandLoot = false;
+			return;
+		}
+
+		enqueue(subject, incomingQty);
+	}
+
+	private static Item resolveSubject( Item picked ){
+		Hero hero = Dungeon.hero;
+		Item subject;
+		if (picked.quantity() > 0 && hero.belongings.contains(picked)){
+			subject = picked;
+		} else {
+			subject = hero.belongings.getSimilar(picked);
+			if (subject == null){
+				picked.commandLoot = false;
+				return null;
+			}
+			subject.commandLoot = true;
+		}
+
+		if (!subject.commandLoot){
+			return null;
+		}
+		return subject;
+	}
+
+	private static void enqueue( Item subject, int qty ){
+		pending.add(new PendingChoice(subject, qty));
+		tryShowNext();
+	}
+
+	public static void tryShowNext(){
+		if (windowOpen || pending.isEmpty()) return;
+		PendingChoice next = pending.poll();
+		if (next == null || next.item == null) return;
+		if (!Dungeon.hero.belongings.contains(next.item)){
+			tryShowNext();
+			return;
+		}
+		ArrayList<Class<?>> choices = choicesFor(next.item, next.qty);
+		if (choices == null || choices.isEmpty()){
+			clearLootIfIdle(next.item);
+			tryShowNext();
+			return;
+		}
+		windowOpen = true;
+		final Item toShow = next.item;
+		final int qty = next.qty;
+		final ArrayList<Class<?>> opts = choices;
+		Game.runOnRenderThread(() -> GameScene.show(new WndCommand(toShow, opts, qty)));
+	}
+
+	public static void onWindowClosed(){
+		windowOpen = false;
+		tryShowNext();
+	}
+
+	/**
+	 * Ground pickup of Command loot. The item stays on the ground, and no turn is spent,
+	 * until the player confirms a choice.
+	 */
+	public static boolean deferGroundPickup( Heap heap ){
+		// The ground-item selector is a permanent QoL feature, not a Command-pact effect.
+		if (heap == null || heap.type != Heap.Type.HEAP) return false;
+		if (windowOpen || deferred != null || Modifiers.suppressCommandWindow) return false;
+		if (Dungeon.hero == null || !Dungeon.hero.isAlive()) return false;
+		Item item = heap.peek();
+		if (item == null) return false;
+		ArrayList<Class<?>> choices = choicesFor( item, item.quantity() );
+		if (choices == null || choices.isEmpty()) return false;
+		deferred = new Deferred( Deferred.Kind.GROUND, heap, item, 0 );
+		showDeferredWindow();
+		return true;
+	}
+
+	/**
+	 * Shop purchase of Command loot. Gold is not spent until the player confirms.
+	 */
+	public static boolean deferShopPurchase( Heap heap, int price ){
+		if (!canDefer( heap, Heap.Type.FOR_SALE )) return false;
+		deferred = new Deferred( Deferred.Kind.SHOP, heap, heap.peek(), price );
+		showDeferredWindow();
+		return true;
+	}
+
+	private static boolean canDefer( Heap heap, Heap.Type type ){
+		if (heap == null || heap.type != type) return false;
+		if (windowOpen || deferred != null) return false;
+		if (!Dungeon.isModified(Modifiers.COMMAND) || Modifiers.suppressCommandWindow) return false;
+		if (Dungeon.hero == null || !Dungeon.hero.isAlive()) return false;
+		Item item = heap.peek();
+		if (item == null || !item.commandLoot) return false;
+		ArrayList<Class<?>> choices = choicesFor( item, item.quantity() );
+		return choices != null && !choices.isEmpty();
+	}
+
+	private static void showDeferredWindow(){
+		Deferred d = deferred;
+		if (d == null || d.item == null) return;
+		ArrayList<Class<?>> choices = choicesFor( d.item, d.item.quantity() );
+		if (choices == null || choices.isEmpty()){
+			deferred = null;
+			return;
+		}
+		windowOpen = true;
+		final Item toShow = d.item;
+		final int qty = d.item.quantity();
+		final ArrayList<Class<?>> opts = choices;
+		Game.runOnRenderThread(() -> GameScene.show(new WndCommand(toShow, opts, qty)));
+	}
+
+	public static void confirmChoice( Item original, Class<?> chosen, int qty ){
+		if (deferred != null && deferred.item == original){
+			completeDeferred( chosen );
+			return;
+		}
+		applyChoice( original, chosen, qty );
+	}
+
+	public static ArrayList<Class<?>> choicesFor( Item item ){
+		return choicesFor(item, item == null ? 1 : Math.max(1, item.quantity()));
+	}
+
+	public static ArrayList<Class<?>> choicesFor( Item item, int qty ){
+		if (item == null) return null;
+
+		// Hero/quest uniques stay un-Commandable; SoU/SoStr/trinkets/etc. are unique but allowed
+		if (item.unique && !commandableUnique(item)){
+			return null;
+		}
+		if (item.getClass().getName().contains(".quest.")){
+			return null;
+		}
+
+		ArrayList<Class<?>> list = new ArrayList<>();
+
+		if (item instanceof MeleeWeapon && !(item instanceof MagesStaff) && !(item instanceof SpiritBow)){
+			addAll(list, Generator.Category.WEP_T1.classes);
+			addAll(list, Generator.Category.WEP_T2.classes);
+			addAll(list, Generator.Category.WEP_T3.classes);
+			addAll(list, Generator.Category.WEP_T4.classes);
+			addAll(list, Generator.Category.WEP_T5.classes);
+			list.remove(MagesStaff.class);
+			list.remove(SpiritBow.class);
+		} else if (item instanceof Armor && !(item instanceof ClassArmor)){
+			for (Class<?> cls : Generator.Category.ARMOR.classes){
+				if (!ClassArmor.class.isAssignableFrom(cls)){
+					list.add(cls);
+				}
+			}
+		} else if (item instanceof TippedDart){
+			addAll(list, Catalog.TIPPED_DARTS.items().toArray(new Class[0]));
+		} else if (item instanceof MissileWeapon){
+			addAll(list, Generator.Category.MIS_T1.classes);
+			addAll(list, Generator.Category.MIS_T2.classes);
+			addAll(list, Generator.Category.MIS_T3.classes);
+			addAll(list, Generator.Category.MIS_T4.classes);
+			addAll(list, Generator.Category.MIS_T5.classes);
+		} else if (item instanceof Wand){
+			addAll(list, Generator.Category.WAND.classes);
+		} else if (item instanceof Ring){
+			addAll(list, Generator.Category.RING.classes);
+		} else if (item instanceof Artifact){
+			addAll(list, Generator.Category.ARTIFACT.classes);
+			list.remove(CloakOfShadows.class);
+			list.remove(HolyTome.class);
+			if (item instanceof CloakOfShadows || item instanceof HolyTome){
+				return null;
+			}
+		} else if (item instanceof Trinket){
+			addAll(list, Generator.Category.TRINKET.classes);
+		} else if (item instanceof ExoticPotion){
+			addAll(list, Catalog.EXOTIC_POTIONS.items().toArray(new Class[0]));
+		} else if (item instanceof Brew || item instanceof Elixir){
+			addAll(list, Catalog.BREWS_ELIXIRS.items().toArray(new Class[0]));
+		} else if (item instanceof Potion){
+			addAll(list, Generator.Category.POTION.classes);
+		} else if (item instanceof ExoticScroll){
+			addAll(list, Catalog.EXOTIC_SCROLLS.items().toArray(new Class[0]));
+		} else if (item instanceof Spell){
+			addAll(list, Catalog.SPELLS.items().toArray(new Class[0]));
+		} else if (item instanceof Scroll){
+			addAll(list, Generator.Category.SCROLL.classes);
+		} else if (item instanceof Plant.Seed){
+			addAll(list, Generator.Category.SEED.classes);
+			list.remove(Rotberry.Seed.class);
+			if (item instanceof Rotberry.Seed) return null;
+		} else if (item instanceof Runestone){
+			addAll(list, Generator.Category.STONE.classes);
+		} else if (item instanceof Food){
+			if (Dungeon.isChallenged(Challenges.NO_FOOD)){
+				return null;
+			}
+			addAll(list, Catalog.FOOD.items().toArray(new Class[0]));
+		} else if (item instanceof Bomb){
+			addAll(list, Catalog.BOMBS.items().toArray(new Class[0]));
+		} else if (item instanceof Honeypot || item instanceof ArcaneResin
+				|| item instanceof LiquidMetal || item instanceof Stylus){
+			// Single-type consumables/materials use their own class as the only
+			// ordinary choice; the universal Scroll of Upgrade option is added below.
+			list.add(item.getClass());
+		} else {
+			return null;
+		}
+
+		// Universal Command conversion: consumables may be exchanged for Scrolls of Upgrade.
+		// Keep this option out of cursed/equipped items, matching the conversion rules.
+		if (isCommandConsumable(item) && !item.cursed && (Dungeon.hero == null || !item.isEquipped(Dungeon.hero))){
+			if (!list.contains(ScrollOfUpgrade.class)) list.add(ScrollOfUpgrade.class);
+		}
+
+		// Always include the claimed type if somehow missing
+		if (!list.contains(item.getClass())){
+			list.add(0, item.getClass());
+		}
+
+		list.removeIf(cls -> {
+			Item sample = (Item) Reflection.newInstance(cls);
+			return sample != null && Challenges.isItemBlocked(sample);
+		});
+
+		limitUpgradeScrolls(item, list, qty);
+
+		applyRunLayout(item, list);
+		return list.isEmpty() ? null : list;
+	}
+
+	/**
+	 * Forbidden Runes keeps the odd scheduled upgrade scrolls (8 of 15). Those fill the budget.
+	 * Command can pick another upgrade scroll only after one of those was commanded into something else.
+	 */
+	private static int forbiddenUpgradeScrolls(){
+		int kept = 0;
+		for (int slot = 1; slot <= UPGRADE_SCROLLS_SCHEDULED; slot++){
+			if (slot % 2 != 0) kept++;
+		}
+		return kept;
+	}
+
+	private static int upgradeScrollPicksLeft(){
+		int allowance = forbiddenUpgradeScrolls();
+		int reservedByLevelgen = allowance;
+		return allowance - reservedByLevelgen - souAdjustment;
+	}
+
+	private static void limitUpgradeScrolls( Item item, ArrayList<Class<?>> list, int qty ){
+		if (!Dungeon.isChallenged(Challenges.NO_SCROLLS)) return;
+		if (item instanceof ScrollOfUpgrade) return;
+		// The NO_SCROLLS challenge must also constrain the new universal consumable option.
+		if (!(item instanceof Scroll) && !isCommandConsumable(item)) return;
+		if (upgradeScrollPicksLeft() < Math.max(1, qty)){
+			list.remove(ScrollOfUpgrade.class);
+		}
+	}
+
+	/** Items that Command can exchange for a Scroll of Upgrade, beyond ordinary scrolls. */
+	private static boolean isCommandConsumable( Item item ){
+		return item instanceof Potion
+				|| item instanceof Scroll
+				|| item instanceof Plant.Seed
+				|| item instanceof Runestone
+				|| item instanceof Bomb
+				|| item instanceof Honeypot
+				|| item instanceof ArcaneResin
+				|| item instanceof LiquidMetal
+				|| item instanceof Stylus
+				|| item instanceof Spell
+				|| item instanceof Food
+				|| item instanceof TippedDart;
+	}
+
+	private static void recordUpgradeScrollChoice( Item original, Class<?> chosen, int qty ){
+		if (!Dungeon.isChallenged(Challenges.NO_SCROLLS)) return;
+		if (original == null || chosen == null || qty <= 0) return;
+		boolean was = original instanceof ScrollOfUpgrade;
+		boolean now = chosen == ScrollOfUpgrade.class;
+		if (was == now) return;
+		souAdjustment += now ? qty : -qty;
+	}
+
+	private static boolean commandableUnique( Item item ){
+		return item instanceof ScrollOfUpgrade
+				|| item instanceof PotionOfStrength
+				|| item instanceof Trinket
+				|| item instanceof Runestone
+				|| item instanceof ExoticScroll
+				|| item instanceof ExoticPotion
+				|| item instanceof Elixir
+				|| item instanceof Brew
+				|| item instanceof Spell;
+	}
+
+	private static void addAll( ArrayList<Class<?>> list, Class<?>[] classes ){
+		if (classes == null) return;
+		for (Class<?> cls : classes){
+			if (cls != null && !list.contains(cls)) list.add(cls);
+		}
+	}
+
+	private static void applyRunLayout( Item item, ArrayList<Class<?>> list ){
+		ensureLayouts();
+		if (item instanceof Ring){
+			applyLayout(list, ringLayout);
+		} else if (item instanceof ExoticPotion){
+			applyLayout(list, mappedLayout(potionLayout, ExoticPotion.regToExo));
+		} else if (item instanceof Potion && !(item instanceof Brew) && !(item instanceof Elixir)){
+			applyLayout(list, potionLayout);
+		} else if (item instanceof ExoticScroll){
+			applyLayout(list, mappedLayout(scrollLayout, ExoticScroll.regToExo));
+		} else if (item instanceof Scroll){
+			applyLayout(list, scrollLayout);
+		}
+	}
+
+	private static void ensureLayouts(){
+		if (potionLayout != null && scrollLayout != null && ringLayout != null) return;
+		Random.pushGenerator(Dungeon.seed + LAYOUT_SEED);
+		try {
+			if (potionLayout == null) potionLayout = shuffledCopy(Generator.Category.POTION.classes);
+			if (scrollLayout == null) scrollLayout = shuffledCopy(Generator.Category.SCROLL.classes);
+			if (ringLayout == null) ringLayout = shuffledCopy(Generator.Category.RING.classes);
+		} finally {
+			Random.popGenerator();
+		}
+	}
+
+	private static ArrayList<Class<?>> shuffledCopy( Class<?>[] classes ){
+		ArrayList<Class<?>> list = new ArrayList<>();
+		addAll(list, classes);
+		Class<?>[] arr = list.toArray(new Class[0]);
+		Random.shuffle(arr);
+		list.clear();
+		Collections.addAll(list, arr);
+		return list;
+	}
+
+	private static ArrayList<Class<?>> mappedLayout( ArrayList<Class<?>> regular, Map<? extends Class<?>, ? extends Class<?>> map ){
+		ArrayList<Class<?>> mapped = new ArrayList<>();
+		if (regular == null) return mapped;
+		for (Class<?> cls : regular){
+			Class<?> exo = map.get(cls);
+			if (exo != null) mapped.add(exo);
+		}
+		return mapped;
+	}
+
+	private static void applyLayout( ArrayList<Class<?>> list, ArrayList<Class<?>> layout ){
+		if (layout == null || layout.isEmpty()) return;
+		list.sort(Comparator.comparingInt(cls -> {
+			int i = layout.indexOf(cls);
+			return i >= 0 ? i : Integer.MAX_VALUE;
+		}));
+	}
+
+	private static ArrayList<Class<?>> loadLayout( Bundle bundle, String key ){
+		if (bundle == null || !bundle.contains(key)) return null;
+		Class<?>[] stored = bundle.getClassArray(key);
+		if (stored == null || stored.length == 0) return null;
+		ArrayList<Class<?>> list = new ArrayList<>();
+		addAll(list, stored);
+		return list.isEmpty() ? null : list;
+	}
+
+	private static boolean stillPending( Item item ){
+		for (PendingChoice p : pending){
+			if (p.item == item) return true;
+		}
+		return false;
+	}
+
+	private static void clearLootIfIdle( Item item ){
+		if (item != null && !stillPending(item)){
+			item.commandLoot = false;
+		}
+	}
+
+	public static void applyChoice( Item original, Class<?> chosenClass, int qty ){
+		if (original == null || chosenClass == null || Dungeon.hero == null) return;
+
+		clearLootIfIdle(original);
+
+		if (original.getClass() == chosenClass){
+			return;
+		}
+
+		Item slice = original;
+		boolean sliced = false;
+		if (original.stackable && qty > 0 && original.quantity() > qty){
+			slice = original.split(qty);
+			if (slice == null) return;
+			sliced = true;
+		}
+
+		Item result = buildReplacement(slice, chosenClass);
+		if (result == null){
+			if (sliced) original.merge(slice);
+			return;
+		}
+
+		int convertedQty = slice.quantity();
+		Hero hero = Dungeon.hero;
+		int slot = sliced ? -1 : Dungeon.quickslot.getSlot(original);
+
+		Modifiers.suppressCommandWindow = true;
+		try {
+			if (sliced){
+				if (!result.collect()){
+					Dungeon.level.drop(result, hero.pos).sprite.drop();
+				}
+			} else if (original.isEquipped(hero)){
+				original.cursed = false;
+				if (original instanceof KindOfWeapon && hero.belongings.secondWep() == original){
+					((EquipableItem) original).doUnequip(hero, false);
+					((KindOfWeapon) result).equipSecondary(hero);
+				} else {
+					((EquipableItem) original).doUnequip(hero, false);
+					((EquipableItem) result).doEquip(hero);
+				}
+				hero.spend(-hero.cooldown());
+			} else {
+				if (original instanceof MissileWeapon && !(original instanceof TippedDart)){
+					original.detachAll(hero.belongings.backpack);
+				} else {
+					original.detach(hero.belongings.backpack);
+				}
+				if (!result.collect()){
+					Dungeon.level.drop(result, hero.pos).sprite.drop();
+				} else if (result.stackable && hero.belongings.getSimilar(result) != null){
+					result = hero.belongings.getSimilar(result);
+				}
+			}
+			if (slot != -1
+					&& result.defaultAction() != null
+					&& !Dungeon.quickslot.isNonePlaceholder(slot)
+					&& hero.belongings.contains(result)){
+				Dungeon.quickslot.setSlot(slot, result);
+			}
+		} finally {
+			Modifiers.suppressCommandWindow = false;
+		}
+
+		recordUpgradeScrollChoice(original, chosenClass, convertedQty);
+
+		if (result.isIdentified()){
+			Catalog.setSeen(result.getClass());
+			Statistics.itemTypesDiscovered.add(result.getClass());
+		}
+	}
+
+	public static void cancel( Item original ){
+		if (deferred != null && (original == null || deferred.item == original)){
+			deferred = null;
+			return;
+		}
+		clearLootIfIdle(original);
+	}
+
+	private static void completeDeferred( Class<?> chosen ){
+		Deferred d = deferred;
+		deferred = null;
+		if (d == null || chosen == null || Dungeon.hero == null || !Dungeon.hero.isAlive()) return;
+		if (Dungeon.level == null) return;
+
+		Heap heap = Dungeon.level.heaps.get( d.pos );
+		if (heap == null || heap.items == null || !heap.items.contains( d.item )) return;
+		if (d.kind == Deferred.Kind.SHOP && Dungeon.gold < d.price) return;
+
+		Item incoming = d.item;
+		boolean replace = chosen != incoming.getClass();
+		Item toPick = incoming;
+		Long missileId = null;
+		Integer previousThreshold = null;
+		boolean hadThreshold = false;
+		if (replace && incoming instanceof MissileWeapon && incoming.isUpgradable()){
+			missileId = ((MissileWeapon) incoming).setID;
+			MissileWeapon.UpgradedSetTracker tracker = Dungeon.hero.buff( MissileWeapon.UpgradedSetTracker.class );
+			if (tracker != null && tracker.levelThresholds.containsKey( missileId )){
+				hadThreshold = true;
+				previousThreshold = tracker.levelThresholds.get( missileId );
+			}
+		}
+		if (replace){
+			toPick = buildReplacement( incoming, chosen );
+			if (toPick == null) return;
+			toPick.commandLoot = false;
+		} else {
+			incoming.commandLoot = false;
+		}
+
+		int from = d.kind == Deferred.Kind.SHOP ? Dungeon.hero.pos : d.pos;
+		Modifiers.suppressCommandWindow = true;
+		boolean picked;
+		try {
+			if (replace){
+				// collect(), not doPickUp(): pickup validation would dust an upgraded
+				// thrown weapon because buildReplacement already marked that set taken.
+				picked = toPick.collect( Dungeon.hero.belongings.backpack );
+				if (picked){
+					GameScene.pickUp( toPick, from );
+					Sample.INSTANCE.play( Assets.Sounds.ITEM );
+					Dungeon.hero.spendAndNext( toPick.pickupDelay() );
+				}
+			} else {
+				picked = toPick.doPickUp( Dungeon.hero, from );
+			}
+		} finally {
+			Modifiers.suppressCommandWindow = false;
+		}
+
+		if (!picked){
+			if (!replace) incoming.commandLoot = true;
+			if (missileId != null){
+				MissileWeapon.UpgradedSetTracker tracker = Dungeon.hero.buff( MissileWeapon.UpgradedSetTracker.class );
+				if (tracker != null){
+					if (hadThreshold) tracker.levelThresholds.put( missileId, previousThreshold );
+					else tracker.levelThresholds.remove( missileId );
+				}
+			}
+			Dungeon.hero.notePickupResult( toPick, false );
+			return;
+		}
+
+		recordUpgradeScrollChoice(incoming, chosen, incoming.quantity());
+
+		takeFromHeap( heap, incoming );
+
+		if (d.kind == Deferred.Kind.SHOP){
+			Dungeon.gold -= d.price;
+			Catalog.countUses( Gold.class, d.price );
+			TrainingExport.logShop( "shop_buy", incoming.getClass().getSimpleName() );
+		} else {
+			Dungeon.hero.notePickupResult( toPick, true );
+		}
+	}
+
+	private static void takeFromHeap( Heap heap, Item item ){
+		if (heap == null || item == null || heap.items == null || !heap.items.contains( item )) return;
+		if (heap.peek() == item){
+			heap.pickUp();
+			return;
+		}
+		heap.items.remove( item );
+		if (heap.isEmpty()){
+			heap.destroy();
+		} else if (heap.sprite != null){
+			heap.sprite.view( heap ).place( heap.pos );
+		}
+	}
+
+	private static Item buildReplacement( Item original, Class<?> chosenClass ){
+		Item result = (Item) Reflection.newInstance(chosenClass);
+		if (result == null) return null;
+
+		result.quantity(original.quantity());
+		result.levelKnown = original.levelKnown;
+		result.cursedKnown = original.cursedKnown;
+		result.cursed = original.cursed;
+
+		if (original instanceof Artifact && result instanceof Artifact){
+			((Artifact) result).transferUpgrade(original.visiblyUpgraded());
+		} else {
+			int level = original.trueLevel();
+			result.level(0);
+			if (level > 0){
+				result.upgrade(level);
+			} else if (level < 0){
+				result.degrade(-level);
+			}
+		}
+
+		if (original instanceof Weapon && result instanceof Weapon){
+			Weapon o = (Weapon) original;
+			Weapon n = (Weapon) result;
+			n.enchantment = o.enchantment;
+			n.shelfEnchant = o.shelfEnchant;
+			n.curseInfusionBonus = o.curseInfusionBonus;
+			n.masteryPotionBonus = o.masteryPotionBonus;
+			n.augment = o.augment;
+			n.enchantHardened = o.enchantHardened;
+			if (original instanceof MissileWeapon && result instanceof MissileWeapon && original.isUpgradable()){
+				Buff.affect(Dungeon.hero, MissileWeapon.UpgradedSetTracker.class)
+						.levelThresholds.put(((MissileWeapon) original).setID, Integer.MAX_VALUE);
+				((MissileWeapon) n).damage(100 - ((MissileWeapon) original).durabilityLeft());
+			}
+		}
+
+		if (original instanceof Armor && result instanceof Armor){
+			Armor o = (Armor) original;
+			Armor n = (Armor) result;
+			n.inscribe(o.glyph);
+			n.shelfGlyph = o.shelfGlyph;
+			n.glyphHardened = o.glyphHardened;
+			n.augment = o.augment;
+			n.curseInfusionBonus = o.curseInfusionBonus;
+		}
+
+		if (original instanceof Wand && result instanceof Wand){
+			Wand o = (Wand) original;
+			Wand n = (Wand) result;
+			n.curChargeKnown = o.curChargeKnown;
+			n.curseInfusionBonus = o.curseInfusionBonus;
+			n.resinBonus = o.resinBonus;
+			n.curCharges = o.curCharges;
+			n.updateLevel();
+		}
+
+		return result;
+	}
+
+}
