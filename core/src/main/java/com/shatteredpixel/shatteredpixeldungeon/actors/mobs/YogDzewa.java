@@ -308,7 +308,7 @@ public class YogDzewa extends Mob {
 					regularSummons.add(cls);
 
 					int spawnPos = -1;
-					int bestDistanceToHero = Integer.MAX_VALUE;
+					float bestDistanceToHero = Float.MAX_VALUE;
 					// Search the arena around Yog, not just its eight adjacent cells;
 					// Overkill can have eight fists occupying those cells already.
 					for (int cell = 0; cell < Dungeon.level.length(); cell++){
@@ -327,7 +327,7 @@ public class YogDzewa extends Mob {
 					// If the arena is packed, sacrifice a nearby sheep as the original
 					// summon behavior did, while still allowing a wider search radius.
 					if (spawnPos == -1){
-						bestDistanceToHero = Integer.MAX_VALUE;
+						bestDistanceToHero = Float.MAX_VALUE;
 						for (int cell = 0; cell < Dungeon.level.length(); cell++){
 							if (Dungeon.level.distance(pos, cell) > 0 && Dungeon.level.distance(pos, cell) <= 4
 									&& Actor.findChar(cell) instanceof Sheep){
