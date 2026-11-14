@@ -74,7 +74,8 @@ public class WndChallenges extends Window {
 					if (overkill) text.hardlight(0xFFFF3038);
 				}
 			};
-			cb.checked( (checked & Challenges.MASKS[i]) != 0 );
+			cb.checked( (checked & Challenges.MASKS[i]) != 0
+					|| (overkill && (checked & Challenges.LEGACY_GODS_CHOSEN_ONE) != 0) );
 			cb.active = editable;
 
 			if (i > 0) {
