@@ -26,7 +26,7 @@ jobs:
           TEMPFILE_LINK: ${{ inputs.tempfile_link }}
         run: |
           set -euo pipefail
-          python3 - <<'PY'
+          download_url="$(python3 - <<'PY'
           import os, re, urllib.parse
           raw = os.environ["TEMPFILE_LINK"].strip()
           u = urllib.parse.urlparse(raw)
@@ -35,9 +35,10 @@ jobs:
           parts = [p for p in u.path.split("/") if p]
           if not parts or not re.fullmatch(r"[A-Za-z0-9]{11}", parts[0]):
               raise SystemExit("El enlace no tiene el formato esperado de TempFile.org.")
-          print("https://tempfile.org/" + parts[0] + "/download", file=open(os.environ["GITHUB_ENV"], "a"))
+          print("https://tempfile.org/" + parts[0] + "/download")
           PY
-          curl --fail --location --retry 3 "$(< <(grep '^https://' "$GITHUB_ENV" | tail -n1))" -o source.zip
+          )"
+          curl --fail --location --retry 3 "$download_url" -o source.zip
           test "$(stat -c%s source.zip)" -gt 1000000
           unzip -tq source.zip
 
