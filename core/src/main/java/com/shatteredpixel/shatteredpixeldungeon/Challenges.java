@@ -55,8 +55,7 @@ public class Challenges {
 			"swarm_intelligence",
 			"darkness",
 			"no_scrolls",
-		"overkill_doom_mode",
-		"gods_chosen_one"
+		"overkill_doom_mode"
 	};
 
 	public static final int[] MASKS = {
