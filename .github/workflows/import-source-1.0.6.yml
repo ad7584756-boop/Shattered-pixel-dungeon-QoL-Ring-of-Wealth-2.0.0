@@ -1,0 +1,68 @@
+name: Importar fuente completa 1.0.6
+
+on:
+  workflow_dispatch:
+    inputs:
+      tempfile_link:
+        description: "Enlace de TempFile.org generado al subir el ZIP 1.0.6"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  import-source:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Descargar y verificar ZIP
+        env:
+          TEMPFILE_LINK: ${{ inputs.tempfile_link }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os, re, urllib.parse
+          raw = os.environ["TEMPFILE_LINK"].strip()
+          u = urllib.parse.urlparse(raw)
+          if u.scheme != "https" or u.hostname not in {"tempfile.org", "www.tempfile.org"}:
+              raise SystemExit("Usá solamente el enlace HTTPS generado por tempfile.org.")
+          parts = [p for p in u.path.split("/") if p]
+          if not parts or not re.fullmatch(r"[A-Za-z0-9]{11}", parts[0]):
+              raise SystemExit("El enlace no tiene el formato esperado de TempFile.org.")
+          print("https://tempfile.org/" + parts[0] + "/download", file=open(os.environ["GITHUB_ENV"], "a"))
+          PY
+          curl --fail --location --retry 3 "$(< <(grep '^https://' "$GITHUB_ENV" | tail -n1))" -o source.zip
+          test "$(stat -c%s source.zip)" -gt 1000000
+          unzip -tq source.zip
+
+      - name: Extraer e importar el proyecto
+        run: |
+          set -euo pipefail
+          mkdir extracted
+          unzip -q source.zip -d extracted
+          settings="$(find extracted -type f \( -name settings.gradle -o -name settings.gradle.kts \) -print -quit)"
+          test -n "$settings" || { echo "No se encontró settings.gradle"; exit 1; }
+          src="$(dirname "$settings")"
+          test -d "$src/.github/workflows" || { echo "No se encontró .github/workflows"; exit 1; }
+          cp -a "$src"/. .
+          rm -rf extracted source.zip
+          test -f README.md
+          test -f build.gradle
+          test -f gradlew
+          test -f .github/workflows/build-android-debug.yml
+          test -f .github/workflows/build-release.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No hay cambios para publicar."
+          else
+            git commit -m "Import complete Ring of Wealth QoL 1.0.6 source"
+            git push origin HEAD:main
+          fi
