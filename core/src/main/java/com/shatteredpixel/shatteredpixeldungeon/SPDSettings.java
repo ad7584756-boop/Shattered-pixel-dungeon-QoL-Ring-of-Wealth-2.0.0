@@ -414,11 +414,20 @@ public class SPDSettings extends GameSettings {
 	}
 	
 	public static void challenges( int value ) {
+		// Migrate the removed legacy ascent bit to the single Overkill challenge bit.
+		if ((value & Challenges.LEGACY_GODS_CHOSEN_ONE) != 0) {
+			value = (value & ~Challenges.LEGACY_GODS_CHOSEN_ONE) | Challenges.OVERKILL_DOOM_MODE;
+		}
 		put( KEY_CHALLENGES, value );
 	}
 	
 	public static int challenges() {
-		return getInt( KEY_CHALLENGES, 0, 0, Challenges.MAX_VALUE );
+		int value = getInt( KEY_CHALLENGES, 0, 0, Challenges.MAX_VALUE );
+		if ((value & Challenges.LEGACY_GODS_CHOSEN_ONE) != 0) {
+			value = (value & ~Challenges.LEGACY_GODS_CHOSEN_ONE) | Challenges.OVERKILL_DOOM_MODE;
+			put( KEY_CHALLENGES, value );
+		}
+		return value;
 	}
 
 	public static void modifiers( int value ) {
