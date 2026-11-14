@@ -79,6 +79,7 @@ public class Assets {
 		public static final String BANNERS  = "interfaces/banners.png";
 		public static final String BANNERS_MOD = "interfaces/banners_mod.png";
 		public static final String BADGES   = "interfaces/badges.png";
+		public static final String CUSTOM_BADGES = "interfaces/custom_badges.png";
 		public static final String LOCKED   = "interfaces/locked_badge.png";
 
 		public static final String CHROME   = "interfaces/chrome.png";

@@ -28,7 +28,6 @@ import com.shatteredpixel.shatteredpixeldungeon.ui.RenderedTextBlock;
 import com.shatteredpixel.shatteredpixeldungeon.ui.Window;
 import com.watabou.input.PointerEvent;
 import com.watabou.noosa.Image;
-import com.watabou.noosa.ColorBlock;
 import com.watabou.noosa.PointerArea;
 
 public class WndBadge extends Window {
@@ -42,10 +41,6 @@ public class WndBadge extends Window {
 		
 		Image icon = BadgeBanner.image( badge.image );
 		icon.scale.set( 2 );
-		// Give transparent badge pixels a solid black backing so both custom medals
-		// have a complete, clearly framed appearance in the journal.
-		ColorBlock iconBackground = new ColorBlock( icon.width() * 2, icon.height() * 2, 0xFF000000 );
-		add( iconBackground );
 		if (!unlocked) icon.brightness(0.4f);
 		add( icon );
 
@@ -76,9 +71,6 @@ public class WndBadge extends Window {
 		
 		icon.x = (w - icon.width()) / 2f;
 		icon.y = MARGIN;
-		iconBackground.x = icon.x;
-		iconBackground.y = icon.y;
-		PixelScene.align(iconBackground);
 		PixelScene.align(icon);
 
 		title.setPos((w - title.width()) / 2, icon.y + icon.height() + MARGIN);

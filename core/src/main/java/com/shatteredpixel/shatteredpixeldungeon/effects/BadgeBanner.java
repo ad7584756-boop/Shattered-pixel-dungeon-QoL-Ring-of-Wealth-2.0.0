@@ -53,12 +53,13 @@ public class BadgeBanner extends Image {
 	private float time;
 	
 	private static TextureFilm atlas;
+	private static TextureFilm customAtlas;
 	
 	public static ArrayList<BadgeBanner> showing = new ArrayList<>();
 	
 	private BadgeBanner( int index ) {
 		
-		super( Assets.Interfaces.BADGES );
+		super( index >= 128 ? Assets.Interfaces.CUSTOM_BADGES : Assets.Interfaces.BADGES );
 		
 		if (atlas == null) {
 			atlas = new TextureFilm( texture, SIZE, SIZE );
@@ -70,7 +71,12 @@ public class BadgeBanner extends Image {
 	public void setup( int index ){
 		this.index = index;
 		
-		frame( atlas.get( index ) );
+		if (index >= 128) {
+			if (customAtlas == null) customAtlas = new TextureFilm(texture, 32, 32);
+			frame(customAtlas.get(index - 128));
+		} else {
+			frame(atlas.get(index));
+		}
 		origin.set( width / 2, height / 2 );
 		
 		alpha( 0 );
@@ -146,6 +152,7 @@ public class BadgeBanner extends Image {
 
 	//adds a shine to an appropriate pixel on a badge
 	public static void highlight( Image image, int index ) {
+		if (index >= 128) return;
 		
 		PointF p = new PointF();
 
@@ -208,6 +215,12 @@ public class BadgeBanner extends Image {
 	}
 	
 	public static Image image( int index ) {
+		if (index >= 128) {
+			Image image = new Image(Assets.Interfaces.CUSTOM_BADGES);
+			if (customAtlas == null) customAtlas = new TextureFilm(image.texture, 32, 32);
+			image.frame(customAtlas.get(index - 128));
+			return image;
+		}
 		Image image = new Image( Assets.Interfaces.BADGES );
 		if (atlas == null) {
 			atlas = new TextureFilm( image.texture, 16, 16 );
