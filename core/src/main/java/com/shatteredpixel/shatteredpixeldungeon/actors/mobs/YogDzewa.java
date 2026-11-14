@@ -331,7 +331,7 @@ public class YogDzewa extends Mob {
 						for (int cell = 0; cell < Dungeon.level.length(); cell++){
 							if (Dungeon.level.distance(pos, cell) > 0 && Dungeon.level.distance(pos, cell) <= 4
 									&& Actor.findChar(cell) instanceof Sheep){
-								int distanceToHero = Dungeon.level.trueDistance(Dungeon.hero.pos, cell);
+								float distanceToHero = Dungeon.level.trueDistance(Dungeon.hero.pos, cell);
 								if (distanceToHero < bestDistanceToHero){
 									bestDistanceToHero = distanceToHero;
 									spawnPos = cell;
