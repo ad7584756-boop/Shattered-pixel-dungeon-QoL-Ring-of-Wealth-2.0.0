@@ -375,6 +375,13 @@ public class DM300 extends Mob {
 		next();
 	}
 
+	private Blob seedGas(int cell, int amount) {
+		if (Dungeon.isChallenged(Challenges.OVERKILL_DOOM_MODE)) {
+			return Blob.seed(cell, amount, CorrosiveGas.class);
+		}
+		return Blob.seed(cell, amount, ToxicGas.class);
+	}
+
 	public void ventGas( Char target ){
 		Dungeon.hero.interrupt();
 
@@ -388,15 +395,15 @@ public class DM300 extends Mob {
 			@Override
 			protected boolean act() {
 				int gasVented = 0;
-				GameScene.add(Blob.seed(trajectory.collisionPos, 100*gasMulti, Dungeon.isChallenged(Challenges.OVERKILL_DOOM_MODE) ? CorrosiveGas.class : ToxicGas.class));
+				GameScene.add(seedGas(trajectory.collisionPos, 100*gasMulti));
 				for (int i : trajectory.subPath(0, trajectory.dist)){
-					GameScene.add(Blob.seed(i, 20*gasMulti, Dungeon.isChallenged(Challenges.OVERKILL_DOOM_MODE) ? CorrosiveGas.class : ToxicGas.class));
+					GameScene.add(seedGas(i, 20*gasMulti));
 					gasVented += 20*gasMulti;
 				}
 				if (gasVented < 250*gasMulti){
 					int toVentAround = (int)Math.ceil(((250*gasMulti) - gasVented)/8f);
 					for (int i : PathFinder.NEIGHBOURS8){
-						GameScene.add(Blob.seed(pos+i, toVentAround, Dungeon.isChallenged(Challenges.OVERKILL_DOOM_MODE) ? CorrosiveGas.class : ToxicGas.class));
+						GameScene.add(seedGas(pos+i, toVentAround));
 					}
 				}
 				Actor.remove(this);
