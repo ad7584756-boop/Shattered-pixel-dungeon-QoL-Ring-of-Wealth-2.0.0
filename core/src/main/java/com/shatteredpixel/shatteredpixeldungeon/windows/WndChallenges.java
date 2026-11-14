@@ -67,7 +67,7 @@ public class WndChallenges extends Window {
 			final String challenge = Challenges.NAME_IDS[i];
 			
 			final boolean overkill = Challenges.MASKS[i] == Challenges.OVERKILL_DOOM_MODE;
-			CheckBox cb = new CheckBox( overkill ? "OVERKILL DOOM MODE" : Messages.titleCase(Messages.get(Challenges.class, challenge)) ){
+			CheckBox cb = new CheckBox( overkill ? Messages.get(Challenges.class, challenge) : Messages.titleCase(Messages.get(Challenges.class, challenge)) ){
 				@Override
 				protected void layout(){
 					super.layout();
