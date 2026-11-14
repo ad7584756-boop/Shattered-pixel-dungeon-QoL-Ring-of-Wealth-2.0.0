@@ -255,6 +255,12 @@ public enum Rankings {
 
 		Statistics.totalScore *= Statistics.winMultiplier * Statistics.chalMultiplier;
 
+		// Overkill Doom is intended to support the 10,000,000-point endgame achievement.
+		// Apply its dedicated score bonus after the normal score and challenge multipliers.
+		if (Dungeon.isChallenged(Challenges.OVERKILL_DOOM_MODE)) {
+			Statistics.totalScore *= 5;
+		}
+
 		return Statistics.totalScore;
 	}
 
