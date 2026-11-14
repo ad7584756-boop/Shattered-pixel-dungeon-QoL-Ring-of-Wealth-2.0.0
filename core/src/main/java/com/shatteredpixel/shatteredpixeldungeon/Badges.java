@@ -1140,7 +1140,7 @@ public class Badges {
 	public static void validateHappyEnd() {
 		local.add( Badge.HAPPY_END );
 		displayBadge( Badge.HAPPY_END );
-		if (Dungeon.isChallenged(Challenges.GODS_CHOSEN_ONE) && Statistics.ascended){
+		if (Dungeon.isChallenged(Challenges.OVERKILL_DOOM_MODE) && Statistics.ascended){
 			displayBadge(Badge.GODS_CHOSEN_ONE);
 		}
 
