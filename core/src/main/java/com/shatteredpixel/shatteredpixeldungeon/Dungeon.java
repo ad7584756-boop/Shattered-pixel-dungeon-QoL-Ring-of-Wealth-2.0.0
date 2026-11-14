@@ -325,6 +325,10 @@ public class Dungeon {
 	}
 
 	public static boolean isChallenged( int mask ) {
+		if (mask == Challenges.OVERKILL_DOOM_MODE) {
+			// Migrate old saves where the former standalone God's Chosen One bit was selected.
+			return (challenges & (Challenges.OVERKILL_DOOM_MODE | Challenges.LEGACY_GODS_CHOSEN_ONE)) != 0;
+		}
 		return (challenges & mask) != 0;
 	}
 
