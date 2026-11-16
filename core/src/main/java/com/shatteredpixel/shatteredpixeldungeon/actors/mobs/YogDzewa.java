@@ -364,11 +364,12 @@ public class YogDzewa extends Mob {
 		if (summonCooldown > 0) summonCooldown -= Dungeon.isChallenged(Challenges.OVERKILL_DOOM_MODE) ? 3f : (Dungeon.isChallenged(Challenges.STRONGER_BOSSES) ? 1.5f : 1f);
 		if (abilityCooldown > 0) abilityCooldown--;
 
-		//extra fast abilities and summons at the final 100 HP
-		if (phase == 5 && abilityCooldown > 2){
+		// Overkill enters its accelerated final intensity at 10% HP (10 million of 100 million).
+		boolean overkillFinalIntensity = Dungeon.isChallenged(Challenges.OVERKILL_DOOM_MODE) && HP <= HT / 10;
+		if ((phase == 5 || overkillFinalIntensity) && abilityCooldown > 2){
 			abilityCooldown = 2;
 		}
-		if (phase == 5 && summonCooldown > 3){
+		if ((phase == 5 || overkillFinalIntensity) && summonCooldown > 3){
 			summonCooldown = 3;
 		}
 
@@ -393,19 +394,7 @@ public class YogDzewa extends Mob {
 	public void processFistDeath(){
 		//normally Yog has no logic when a fist dies specifically
 		//but the very last fist to die does trigger the final phase
-		if (phase == 5 && findFist() == null && Dungeon.isChallenged(Challenges.OVERKILL_DOOM_MODE)){
-			Game.runOnRenderThread(new Callback() {
-				@Override
-				public void call() {
-					Music.INSTANCE.fadeOut(0.5f, new Callback() {
-						@Override
-						public void call() {
-							Music.INSTANCE.play(Assets.Music.HALLS_OVERKILL_BOSS_FINALE, true);
-						}
-					});
-				}
-			});
-		} else if (phase == 4 && findFist() == null){
+		if (phase == 4 && findFist() == null){
 			yell(Messages.get(this, "hope"));
 			summonCooldown = -15; //summon a burst of minions!
 			phase = 5;
@@ -461,6 +450,22 @@ public class YogDzewa extends Mob {
 		if (phase < 4 && HP <= HT - ((Dungeon.isChallenged(Challenges.OVERKILL_DOOM_MODE) || Dungeon.isChallenged(Challenges.STRONGER_BOSSES)) ? (HT * 3 / 10) : 300)*phase){
 
 			phase++;
+
+			// In Overkill, switch to the finale soundtrack as soon as Yog reaches 10 million HP.
+			// This is one tenth of its 100 million base HP, matching the normal 100/1000 threshold.
+			if (Dungeon.isChallenged(Challenges.OVERKILL_DOOM_MODE) && HP <= HT / 10 && phase == 3){
+				Game.runOnRenderThread(new Callback() {
+					@Override
+					public void call() {
+						Music.INSTANCE.fadeOut(0.5f, new Callback() {
+							@Override
+							public void call() {
+								Music.INSTANCE.play(Assets.Music.HALLS_OVERKILL_BOSS_FINALE, true);
+							}
+						});
+					}
+				});
+			}
 
 			updateVisibility(Dungeon.level);
 			GLog.n(Messages.get(this, "darkness"));
