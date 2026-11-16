@@ -161,6 +161,8 @@ public class Assets {
 		public static final String HALLS_TENSE          = "music/halls_tense.ogg";
 		public static final String HALLS_BOSS           = "music/halls_boss.ogg";
 		public static final String HALLS_BOSS_FINALE    = "music/halls_boss_finale.ogg";
+		public static final String HALLS_OVERKILL_BOSS = "music/halls_overkill_boss.mp3";
+		public static final String HALLS_OVERKILL_BOSS_FINALE = "music/halls_overkill_boss_finale.mp3";
 	}
 
 	public static class Sounds {
