@@ -79,7 +79,9 @@ public class HallsBossLevel extends Level {
 	@Override
 	public void playLevelMusic() {
 		if (locked && BossHealthBar.isAssigned()){
-			if (BossHealthBar.isBleeding()){
+			if (Dungeon.isChallenged(com.shatteredpixel.shatteredpixeldungeon.Challenges.OVERKILL_DOOM_MODE)){
+				Music.INSTANCE.play(Assets.Music.HALLS_OVERKILL_BOSS, true);
+			} else if (BossHealthBar.isBleeding()){
 				Music.INSTANCE.play(Assets.Music.HALLS_BOSS_FINALE, true);
 			} else {
 				Music.INSTANCE.play(Assets.Music.HALLS_BOSS, true);
