@@ -639,7 +639,8 @@ public class YogDzewa extends Mob {
 			Game.runOnRenderThread(new Callback() {
 				@Override
 				public void call() {
-					Music.INSTANCE.play(Assets.Music.HALLS_BOSS, true);
+					Music.INSTANCE.play(Dungeon.isChallenged(Challenges.OVERKILL_DOOM_MODE)
+							? Assets.Music.HALLS_OVERKILL_BOSS : Assets.Music.HALLS_BOSS, true);
 				}
 			});
 			if (phase == 0) {
