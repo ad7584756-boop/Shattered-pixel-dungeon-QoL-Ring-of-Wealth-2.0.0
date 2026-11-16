@@ -457,33 +457,28 @@ public class RingOfWealth extends Ring {
 		}
 
 		Item result;
-		//each upgrade increases depth used for calculating drops by 1
+		// Legendary equipment categories use equal weights, except thrown weapons,
+			// which have half the chance of each other category (1:1:1:1:0.5).
+		// Artifacts are not part of this five-category legendary pool.
+		// Each upgrade increases depth used for calculating drops by 1.
 		int floorset = (Dungeon.depth + level)/5;
-		switch (Random.Int(7)){
-			default: case 0: case 1:
-				Weapon w = Generator.randomWeapon(floorset, true);
-				if (!w.hasGoodEnchant() && Random.Int(10) < level)      w.enchant();
-				else if (w.hasCurseEnchant())                           w.enchant(null);
-				result = w;
-				break;
-			case 2:
-				Armor a = Generator.randomArmor(floorset);
-				if (!a.hasGoodGlyph() && Random.Int(10) < level)        a.inscribe();
-				else if (a.hasCurseGlyph())                             a.inscribe(null);
-				result = a;
-				break;
-			case 3:
-				result = Generator.randomUsingDefaults(Generator.Category.WAND);
-				break;
-			case 4:
-				result = Generator.randomUsingDefaults(Generator.Category.RING);
-				break;
-			case 5:
-				result = Generator.randomMissile(floorset, true);
-				break;
-			case 6:
-				result = Generator.random(Generator.Category.ARTIFACT);
-				break;
+		float categoryRoll = Random.Float() * 4.5f;
+		if (categoryRoll < 1f){
+			Weapon w = Generator.randomWeapon(floorset, true);
+			if (!w.hasGoodEnchant() && Random.Int(10) < level)      w.enchant();
+			else if (w.hasCurseEnchant())                           w.enchant(null);
+			result = w;
+		} else if (categoryRoll < 2f){
+			Armor a = Generator.randomArmor(floorset);
+			if (!a.hasGoodGlyph() && Random.Int(10) < level)        a.inscribe();
+			else if (a.hasCurseGlyph())                             a.inscribe(null);
+			result = a;
+		} else if (categoryRoll < 3f){
+			result = Generator.randomUsingDefaults(Generator.Category.WAND);
+		} else if (categoryRoll < 4f){
+			result = Generator.randomUsingDefaults(Generator.Category.RING);
+		} else {
+			result = Generator.randomMissile(floorset, true);
 		}
 		// Weapons (including thrown weapons), armor, wands and rings respect the
 		// 1.0.4 minimum: effective Wealth level + 1. Artifacts retain the old floor.
