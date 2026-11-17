@@ -122,20 +122,23 @@ public class BadgesGrid extends Component {
 			this.unlocked = unlocked;
 
 			icon = BadgeBanner.image(badge.image);
+			// Custom achievement tiles are 32x32, while standard badges are 16x16.
+			// Match their rendered footprint so they fit the same grid cells.
+			if (badge.image >= 128) icon.scale.set(0.5f);
 			if (!unlocked) {
 				icon.brightness(0.4f);
 			}
 			add(icon);
 
-			setSize( icon.width(), icon.height() );
+			setSize( icon.width() * icon.scale.x, icon.height() * icon.scale.y );
 		}
 
 		@Override
 		protected void layout() {
 			super.layout();
 
-			icon.x = x + (width - icon.width()) / 2;
-			icon.y = y + (height - icon.height()) / 2;
+			icon.x = x + (width - icon.width() * icon.scale.x) / 2;
+			icon.y = y + (height - icon.height() * icon.scale.y) / 2;
 		}
 
 		@Override
