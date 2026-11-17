@@ -40,7 +40,7 @@ public class WndBadge extends Window {
 		super();
 		
 		Image icon = BadgeBanner.image( badge.image );
-		icon.scale.set( 2 );
+		icon.scale.set( badge.image >= 128 ? 1 : 2 );
 		if (!unlocked) icon.brightness(0.4f);
 		add( icon );
 

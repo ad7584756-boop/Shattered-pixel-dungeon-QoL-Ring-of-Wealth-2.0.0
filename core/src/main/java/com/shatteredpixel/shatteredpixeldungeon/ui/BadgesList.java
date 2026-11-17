@@ -92,6 +92,7 @@ public class BadgesList extends ScrollPane {
 			
 			this.badge = badge;
 			icon.copy( BadgeBanner.image( badge.image ));
+			if (badge.image >= 128) icon.scale.set( 0.5f );
 			label.text( badge.title() );
 		}
 		
@@ -107,11 +108,11 @@ public class BadgesList extends ScrollPane {
 		@Override
 		protected void layout() {
 			icon.x = x;
-			icon.y = y + (height - icon.height) / 2;
+			icon.y = y + (height - icon.height * icon.scale.y) / 2;
 			PixelScene.align(icon);
 			
 			label.setPos(
-					icon.x + icon.width + 2,
+					icon.x + icon.width * icon.scale.x + 2,
 					y + (height - label.height()) / 2
 			);
 			PixelScene.align(label);

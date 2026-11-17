@@ -70,6 +70,7 @@ public class BadgeBanner extends Image {
 	
 	public void setup( int index ){
 		this.index = index;
+		float displayScale = index >= 128 ? DEFAULT_SCALE / 2f : DEFAULT_SCALE;
 		
 		if (index >= 128) {
 			if (customAtlas == null) customAtlas = new TextureFilm(texture, 32, 32);
@@ -80,7 +81,7 @@ public class BadgeBanner extends Image {
 		origin.set( width / 2, height / 2 );
 		
 		alpha( 0 );
-		scale.set( 2 * DEFAULT_SCALE );
+		scale.set( 2 * displayScale );
 		
 		state = State.FADE_IN;
 		time = FADE_IN_TIME;
@@ -98,7 +99,7 @@ public class BadgeBanner extends Image {
 			switch (state) {
 			case FADE_IN:
 				float p = time / FADE_IN_TIME;
-				scale.set( (1 + p) * DEFAULT_SCALE );
+				scale.set( (1 + p) * (index >= 128 ? DEFAULT_SCALE / 2f : DEFAULT_SCALE) );
 				alpha( 1 - p );
 				break;
 			case STATIC:
@@ -114,7 +115,7 @@ public class BadgeBanner extends Image {
 			case FADE_IN:
 				time = STATIC_TIME;
 				state = State.STATIC;
-				scale.set( DEFAULT_SCALE );
+				scale.set( index >= 128 ? DEFAULT_SCALE / 2f : DEFAULT_SCALE );
 				alpha( 1 );
 				highlight( this, index );
 				break;
